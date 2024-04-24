@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>NSFW Image Detection</title>
+    <script type="module">
+        import { pipeline as tensorflowPipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.16.0';
+        window.tensorflowPipeline = tensorflowPipeline;
+    </script>
+    <script src="./nsfwDetectorClass.js" defer></script>
+</head>
+
+<body>
+    <div id="header">
+        <p>Serving: <code class="code">Hugging Face Zero-Shot Classification</code></p>
+    </div>
+    <div id="root">
+        <div class="App">
+            <div class="content">
+                <!-- Images will be displayed here if they are not detected as NSFW -->
+            </div>
+        </div>
+    </div>
+    <script>
+        window.onload = async () => {
+            const imageUrls = [
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-a2s0FHugVwRatfQ.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-P4bKN2mYkkBPRDX.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-x5r9Yjj9tjAusWA.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-R7DstGj2gcqS1l8.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-Ge99rdd35UHuPpk.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-TxIdsN6LrfW2XT8.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-qgVLr05XzXYB5Go.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-01iq4q7WPanCD6R.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/20-AU8xZq3i4HOLKAw.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-4g7MyiQ9xG9tpJ1.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-greGV1WFlNSh4nN.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-qSqmNGyZPzvo0nQ.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-n33oEGCbx1zN9BR.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-eEbRekkhOzIBRFL.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-WdvYTOIhUWHeQrp.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-vhu4WRsDPG2v2im.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-LRTx8JIPp34Mjxa.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-BcLrzVl5fJ8uEiM.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-JyRniiPqrfmkX2S.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-xqHobfBsmVxykQ9.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-UD5Dj7biJCx0y8o.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-lksL0UIaEC8cfle.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-yPD04PSThfH8Nzc.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-OVcWfAcZ8rhqxwk.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-tdWIwjxptaYLYET.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-Kpygx8IbC1OBR3u.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-ZBojIFIdzCSvkmA.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-3dPsi1yoyAT6BAl.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-tmVWctnKWdlLn9M.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-64UgL8EIpkabJkK.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-C0jjshdbEs8HjZy.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-X7iZmtFkCVkKFpQ.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-cvkrKG6XHYja7Lb.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-hvtFxKpvR2IZfya.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-dYVi4825tXwGHjP.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-ZqNg7O2NlU0a7DR.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-RSIz8tUeU9szhf7.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-5hci781QzjBOuSX.png",
+                "https://hotpotmedia.s3.us-east-2.amazonaws.com/8-6qwvZ1ejaeLSrSk.png"   
+            ];
+            const detector = new window.NsfwDetector();
+
+            // Modified to process images individually and display them as soon as they're classified
+            imageUrls.forEach(async (imageUrl) => {
+                try {
+                    const isNsfw = await detector.isNsfw(imageUrl);
+                    if (!isNsfw) {
+                        displayImage(imageUrl);
+                    } else {
+                        console.log("NSFW content not displayed:", imageUrl);
+                    }
+                } catch (error) {
+                    console.error("Error processing image:", imageUrl, error);
+                }
+            });
+        };
+
+        function displayImage(imageUrl) {
+            const contentDiv = document.querySelector('.content');
+            const imgElement = document.createElement('img');
+            imgElement.src = imageUrl;
+            imgElement.alt = "Displayed Image";
+            imgElement.style = "max-width:100%; height:auto; margin-bottom: 20px;";
+            contentDiv.appendChild(imgElement);
+        }
+    </script>
+</body>
+</html>
+
