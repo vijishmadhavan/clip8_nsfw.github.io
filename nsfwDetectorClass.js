@@ -1,6 +1,6 @@
 class NsfwDetector {
     constructor() {
-        this._threshold = 0.20;
+        this._threshold = 0.30;
         this._nsfwLabels = [
             'FEMALE_BREAST_EXPOSED', 'FEMALE_GENITALIA_EXPOSED', 'BUTTOCKS_EXPOSED', 'ANUS_EXPOSED',
             'MALE_GENITALIA_EXPOSED', 'BLOOD_SHED', 'VIOLENCE', 'GORE', 'PORNOGRAPHY', 'DRUGS', 'ALCOHOL',
